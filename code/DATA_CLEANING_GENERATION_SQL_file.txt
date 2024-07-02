@@ -1,0 +1,296 @@
+###########################################################################################################
+##############GP DATA AND OUTCOMES##################
+##ALL GP visits
+CREATE OR REPLACE TABLE `yhcr-prd-phm-bia-core.[xxxxx].all_gp_visits `AS
+SELECT *,
+CASE
+WHEN age<18 THEN "under18"
+WHEN age>=18 and age<=64 THEN "eighteen64"
+WHEN age IS null THEN "NULL"
+ELSE "over64"
+END age_group
+FROM(
+SELECT *,DATE_DIFF(Date,dob, YEAR) AS age,
+CASE
+WHEN race_source_value="Asian or Asian British: Pakistani - England and Wa" THEN "Pakistani"
+WHEN race_source_value="White: English or Welsh or Scottish or Northern Ir" THEN "whiteBritish"
+WHEN race_source_value IS null THEN "NULL"
+ELSE "other"
+END ethn3,
+CASE
+WHEN gender_source_value="2"OR gender_source_value="Female" OR gender_source_value="F" THEN "Female"
+WHEN gender_source_value="1"OR gender_source_value="Male" OR gender_source_value="M" THEN "Male"
+WHEN gender_source_value IS null THEN "NULL"
+ELSE "other"
+END sex,
+CASE
+WHEN imd_2019_decil_bfd="1" OR imd_2019_decil_bfd="2" THEN "imd_quin_bfd1"
+WHEN imd_2019_decil_bfd="3" OR imd_2019_decil_bfd="4" THEN "imd_quin_bfd2"
+WHEN imd_2019_decil_bfd="5" OR imd_2019_decil_bfd="6" THEN "imd_quin_bfd3"
+WHEN imd_2019_decil_bfd="7" OR imd_2019_decil_bfd="8" THEN "imd_quin_bfd4"
+WHEN imd_2019_decil_bfd="9" OR imd_2019_decil_bfd="10" THEN "imd_quin_bfd5"
+ELSE "NULL"
+END imd_quin_bfd,
+CASE
+WHEN imd_2019_decile_nat="1" OR imd_2019_decile_nat="2" THEN "imd_quin_nat1"
+WHEN imd_2019_decile_nat="3" OR imd_2019_decile_nat="4" THEN "imd_quin_nat2"
+WHEN imd_2019_decile_nat="5" OR imd_2019_decile_nat="6" THEN "imd_quin_nat3"
+WHEN imd_2019_decile_nat="7" OR imd_2019_decile_nat="8" THEN "imd_quin_nat4"
+WHEN imd_2019_decile_nat="9" OR imd_2019_decile_nat="10" THEN "imd_quin_nat5"
+ELSE "NULL"
+END imd_quin_nat
+FROM(
+  SELECT * EXCEPT(new_col) 
+
+FROM ( 
+##de-duplicate based on person id, ctv3code and date
+  SELECT *, ROW_NUMBER() OVER(PARTITION BY person_id, ctv3code,Date ) new_col 
+
+     FROM(SELECT DISTINCT person_id, gender_source_value, ctv3code, race_source_value, dob, Date, imd_2019_decile_nat, imd_2019_decil_bfd
+  FROM
+    (SELECT DISTINCT person_id, birth_datetime, gender_source_value, race_source_value, 
+     dateevent, ctv3code, lsoa_code, 
+     imd_2019_decile_nat, imd_2019_decil_bfd, EXTRACT(DATE FROM birth_datetime) as dob, 
+     EXTRACT(DATE from dateevent) as Date 
+     FROM(
+      SELECT 
+      b.person_id, b.dateevent, 
+      b.ctv3code, c.person_id AS id,c.birth_datetime,c.gender_source_value,
+      c.race_source_value, 
+      d.person_id AS person,d.lsoa, 
+      e.lsoa_code, e.imd_2019_decile_nat, e.imd_2019_decil_bfd
+        FROM `yhcr-prd-phm-bia-core.CB_FDM_PrimaryCare_V8.care_site` a,
+       `yhcr-prd-phm-bia-core.CB_FDM_PrimaryCare_V8.tbl_srcode` b,  
+      `yhcr-prd-phm-bia-core.CB_FDM_PrimaryCare_V8.person` c,
+      `yhcr-prd-phm-bia-core.CB_LOOKUPS.tbl_person_lsoa` d,
+      `yhcr-prd-phm-bia-core.CB_MYSPACE_TM.imd_lsoa_bfd` e
+      WHERE  a.care_site_id=b.care_site_id  and b.person_id=c.person_id
+      and b.person_id=d.person_id and d.lsoa=e.lsoa_code and 
+(b.dateevent>="2018-01-01" and b.dateevent<"2023-10-01") and a.care_site_name in
+('Addingham Surgery',
+'Ashcroft Surgery - Dr Mehay and Partners',
+'Ashwell Medical Centre',
+'Avicenna Medical Practice',
+'Baildon Medical Practice',
+'Bevan Healthcare CIC',
+'Bilton Medical Centre',
+'Bingley Medical Practice',
+'Bowling Highfield Medical Practice',
+'Bradford Student Health Service',
+'Clarendon at ALICE STREET SITE',
+'Cowgill Surgery',
+'Cross Hills Group Practice',
+'Dr Akbars Surgery',
+'Dr I.M.Raja & Partner',
+'Dyneley House Surgery',
+'Eccleshill Integrated Care unit',
+'Farfield Group Practice',
+'Farrow Medical Centre',
+'Fisher Medical Centre',
+'Frizinghall Medical Centre',
+'Grange Medical Centre',
+'Grange Park Surgery',
+'Haigh Hall Medical Centre',
+'Haworth Medical Practice',
+'Highfield Health Centre',
+'Hillside Bridge Surgery',
+'Hollyns Health & Wellbeing',
+'Holycroft Surgery',
+'Horton Bank Practice',
+'Horton Park Medical Practice',
+'Idle Medical Centre',
+'Ilkley & Wharfedale Medical Practice',
+'Ilkley Moor Medical Practice',
+'Kensington Partnership at Kensington St HC',
+'Kensington Street Surgery',
+'Kilmeny Surgery',
+'Leylands Medical Centre',
+'Ling House Medical Centre',
+'Little Horton Lane MC',
+'Low Moor Medical Practice',
+'Manningham Medical Practice',
+'Manor Medical Practice',
+'Moor Park Medical Practice',
+'Moorside Surgery',
+'Mughal Medical Centre',
+'North Street Surgery',
+'Oak Glen Surgery',
+'Oakworth Medical Practice',
+'Park Grange Medical Centre',
+'Parklands Medical Practice',
+'Parkside Medical Practice',
+'Peel Park Surgery',
+'Picton Medical Centre',
+'Primrose Surgery',
+'Rockwell & Wrose Practice',
+'Rooley Lane Medical Centre',
+'Saltaire and Windhill Medical Partnership',
+'Saltaire Medical Practice',
+'Shipley Medical Practice',
+'Silsden Medical Practice',
+'Sunnybank Medical Practice',
+'The Bradford Moor Practice',
+'The City Medical Practice',
+'The Family Practice',
+'The Heaton Medical Practice',
+'The Lister Surgery',
+'The Ridge Medical Practice',
+'The Springfield Surgery (Bingley)',
+'The Willows Medical Centre',
+'Thornbury Medical Centre',
+'Thornton Medical Centre',
+'Tong Medical Practice',
+'Townhead Surgery',
+'Valley View Surgery',
+'Westcliffe Medical Practice',
+'Whetley - Picton Medical Centre',
+'Wibsey & Queensbury Medical Practice',
+'Wilsden Medical Practice',
+'Woodroyd Medical Practice')))) ) 
+WHERE new_col = 1 )); 
+
+#####Extracting GP Respiratory illness 
+CREATE OR REPLACE TABLE `yhcr-prd-phm-bia-core.CB_MYSPACE_TM.gp_respiratory` AS
+SELECT person_id, person_id, ctv3code, Date, ethn3, ethn3, sex, sex, imd_quin_bfd, 
+imd_quin_bfd, imd_quin_nat, age_group
+ FROM `yhcr-prd-phm-bia-core.[xxxxxx].all_gp_visits `a,
+  WHERE a.ctv3code in ('663e.' , '663N.', '663N0', '663N1', '663N2', '663P.', 
+'663V1', '663V2', '663V3', 'H043z', 'H061.',
+'H0615', 'H200.', 'H260.', 'H27..', 'H270.', 'H2700', 'H3...', 'H30z.', 
+'H31..', 'H310.', 'H3122', 'H32..', 'H33..', 'H3301', 
+'H3311', 'H332.', 'H33z.', 'H33z0', 
+'H33z1', 'H3y..', 'H3z..', 'H4600', 'Hyu31', 'X00n8', 
+'X00n9', 'X1007', 'X100B', 'X100C', 'X100E', 'X100H', 
+'X100J', 'X100M', 'X101i', 'X101x', 'X101y', 'X101z', 
+'X1022', 'X102D', 'X104u', 'Xa0lY', 'Xa1hD', 'Xa7nL', 
+'Xa7nM', 'Xa7nN', 'Xa7nP', 'Xa7nT', 'Xa7nU', 'Xa87h', 
+'Xa9Bt', 'Xa9zf', 'Xac33', 
+'XaDsa', 'XaDtg', 'XaDtP', 'XaEIV', 'XaEIW', 'XaEIY', 
+'Xafdj', 'Xafdy', 'XaIBK', 'XaIND', 'XaJEl', 'XaK8Q', 
+'XaKyZ', 'XaN4a', 'XaXZx', 'XaYYt', 'XaZd1', 'XE0Xr', 'XE0Xs', 
+'XE0Xt', 'XE0YG', 'XE0YH', 'XE0YQ', 'XE0YW', 'XE0YX', 'XM0rv', 
+'XM0rz', 'XM0s0', 'XM0s2', 'XSDOK');
+
+
+##Extracting GP Cardiovascular illnesses
+
+CREATE OR REPLACE TABLE `yhcr-prd-phm-bia-core.CB_MYSPACE_TM.gp_cardiovascular` AS
+SELECT person_id, person_id, ctv3code, Date, ethn3, ethn3, sex, sex, imd_quin_bfd, 
+imd_quin_bfd, imd_quin_nat, age_group
+ FROM `yhcr-prd-phm-bia-core.CB_MYSPACE_TM.all_gp_visits_dedup`a,
+ #please enclose each term in a quotation mark 
+WHERE a.ctv3code in (G57y0, X200S, X202l, Xa00I, G1yz1, G211., 
+'G2111', 'G211z', 'G232.', 'G234.', 'G300.', 'G301.', 'G3010', 'G3011', 'G301z', 'G302.', 
+'G303.', 'G304.', 'G305.', 'G306.', 'G307.', 'G308.', 'G30y.', 'G30y0', 'G30y1', 'G30y2', 
+'G30yz', 'G30z.', 'G311z', 'G32..', 'G33..', 'G330.', 'G3300', 'G330z', 'G331.', 'G33z.', 
+'G33z1', 'G33z2', 'G35..', 'G353.', 'G36..', 'G40..', 'G400.', 'G40z.', 'G57..', 'G570.' , 
+'G5700', 'G5701', 'G5702', 'G5703', 'G570z', 'G572.', 'G5720', 'G5721', 'G572z', 'G573.', 
+'G5730', 'G5731', 'G573z', 'G57y1', 'G57y9', 'G57yA', 'G57yz', 'G57z.', 'G58..', 'G5800', 
+'G5801', 'G5802', 'G5803', 'G5810', 'G582.', 'G58z.', 'G61z.', 'G621.', 'G62z.', 'G6410', 
+'G6760', 'Gyu30', 'yu34', 'Gyu35', 'Gyu36', 'Gyu5a', 'Gyu62', 'Gyu64', 'yu6F', 'Q48y1', 
+'R050.', 'R2y10', 'Ryu06', 'X00D5', 'X00D8', 'X00DI', 'X00DJ', 'X00DK', 'X00DL', 'X00DN', 
+'X2007', 'X2008', 'X2009', 'X200A', 'X200E', 'X200K', 'X200P', 'X200V', 'X200W', 'X200X', 
+'X200Y', 'X200Z', 'X2025', 'X202A', 'X202B', 'X202C', 'X202G', 'X202K', 'X202l', 'X202Q', 
+'X202T', 'X202W', 'X70EO', 'X70EP', 'X77BB', 'X77BD', 'X77Bf', 'X77Bi', 'X77BJ', 'X77BL', 
+'X77BY', 'X77BZ', 'Xa07f', 'Xa07g', 'Xa07h', 'Xa0c6', 'Xa0c7', 'Xa0D3', 'Xa0k6', 'Xa0kY', 
+'Xa0kZ', 'Xa0YL',  'Xa2E8', 'Xa7nH', 'Xa7nI', 'XaAC3',  'XaaUH', 'XaAzi', 'XaBM4', 'XaC13', 
+'XaD2b', 'XaD2d', 'XaD2e', 'XaD2f', 'XaD2g', 'XaD2h', 'XaD2i', 'XaEga', 'XaEgY', 'XaeUP', 
+'XaeUR', 'XaEXt', 'XafeB', 'XaFsG', 'XaIf1', 'XaIwM', 'XaIwY', 'XaJX0', 'XaO5n', 'XaOfa', 
+'XaWyi', 'XE0Uh', 'XE0Ui', 'XE0V4', 'XE0V7', 'XE0V8', 'XE0V9', 'XE0VF', 'XE0VJ', 'XE0Wi', 
+'XE0Wy', 'XE2aA', 'XE2QG', 'XE2w4', 'XM0rV', 'XM0zD'
+);
+
+
+
+
+##############A&E DATA AND OUTCOMES#############################################################################
+### All BRI A&E Visits
+CREATE OR REPLACE TABLE `yhcr-prd-phm-bia-core.[xxxxxxx].bri_ae` AS
+SELECT person_id, age_at_attendance_date AS age, arrival_date_time AS Date, diagnosis_1 AS diag, 
+CASE
+WHEN race_source_value="Asian or Asian British: Pakistani - England and Wa" THEN "Pakistani"
+WHEN race_source_value="White: English or Welsh or Scottish or Northern Ir" THEN "whiteBritish"
+WHEN race_source_value IS null THEN "NULL"
+ELSE "other"
+END ethn3,
+CASE
+WHEN gender="2" OR gender_source_value="2"OR gender_source_value="Female" OR gender_source_value="F" THEN "Female"
+WHEN gender="1" OR gender_source_value="1" OR gender_source_value="Male" OR gender_source_value="M" THEN "Male"
+WHEN gender IS null AND gender_source_value IS null THEN "NULL"
+ELSE "UNKNOWN"
+END sex,
+CASE
+WHEN imd_2019_decil_bfd="1" OR imd_2019_decil_bfd="2" THEN "imd_quin_bfd1"
+WHEN imd_2019_decil_bfd="3" OR imd_2019_decil_bfd="4" THEN "imd_quin_bfd2"
+WHEN imd_2019_decil_bfd="5" OR imd_2019_decil_bfd="6" THEN "imd_quin_bfd3"
+WHEN imd_2019_decil_bfd="7" OR imd_2019_decil_bfd="8" THEN "imd_quin_bfd4"
+WHEN imd_2019_decil_bfd="9" OR imd_2019_decil_bfd="10" THEN "imd_quin_bfd5"
+ELSE "NULL"
+END imd_quin_bfd,
+CASE
+WHEN imd_2019_decile_nat="1" OR imd_2019_decile_nat="2" THEN "imd_quin_nat1"
+WHEN imd_2019_decile_nat="3" OR imd_2019_decile_nat="4" THEN "imd_quin_nat2"
+WHEN imd_2019_decile_nat="5" OR imd_2019_decile_nat="6" THEN "imd_quin_nat3"
+WHEN imd_2019_decile_nat="7" OR imd_2019_decile_nat="8" THEN "imd_quin_nat4"
+WHEN imd_2019_decile_nat="9" OR imd_2019_decile_nat="10" THEN "imd_quin_nat5"
+ELSE "NULL"
+END imd_quin_nat,
+CASE
+WHEN age_at_attendance_date<"18" THEN "under18"
+WHEN age_at_attendance_date>="18" and age_at_attendance_date<="64" THEN "eighteen64"
+WHEN age_at_attendance_date IS null THEN "NULL"
+ELSE "over64"
+END age_group
+FROM (SELECT a.person_id, a.gender, a.age_at_attendance_date, a.arrival_date_time, a.diagnosis_1,
+b.person_id AS person,b.birth_datetime,b.gender_source_value, b.race_source_value,
+c.lsoa, c.person_id AS id,
+d.lsoa_code, d.imd_2019_decile_nat, d.imd_2019_decil_bfd
+ FROM `yhcr-prd-phm-bia-core.CB_FDM_Warehouse_V3.tbl_ae` a,
+ `yhcr-prd-phm-bia-core.CB_FDM_Warehouse_V3.person` b,
+ `yhcr-prd-phm-bia-core.CB_LOOKUPS.tbl_person_lsoa`c,
+`yhcr-prd-phm-bia-core.CB_MYSPACE_TM.imd_lsoa_bfd` d
+WHERE a.person_id=b.person_id and a.person_id=c.person_id and c.lsoa=d.lsoa_code and
+a.arrival_date_time>="2018-01-01" and a.arrival_date_time<"2023-10-01");
+
+#####Extracting A&E Respiratory illness 
+CREATE OR REPLACE TABLE `yhcr-prd-phm-bia-core.[xxxxxx].ae_respiratory` AS
+SELECT person_id, Date, diag, ethn3, sex, imd_quin_bfd, imd_quin_nat, age_group
+ FROM `yhcr-prd-phm-bia-core.[xxxxxxx].bri_ae` a,
+ #please add a quotation mark to each term
+WHERE diag in ('I501', 'J050', 'J100', 'J101', 'J111', 'J118', 'J120',
+'J121','J122','J123', 
+'J128', 'J129', 'J150','J151','J152','J153','J154','J155',
+'J156','J157','J158', 'J160', 'J168', 'J180','J181', 'J182', 'J188',
+'J189','J190','J191','J192','J193','J194','J195','J196','J197','J198',
+'J199','J200','J201','J202','J203','J204','J205','J206','J207','J208',
+'J209','J210','J211', 
+'J218', 'J219', 'J385', 'J410', 'J411', 'J418', 'J430', 
+'J431', 'J432', 'J438', 'J439', 'J440', 'J441', 'J448', 'J451', 
+'J458', 'J459', 'J46X', 'J60X', 'J628', 'J64X', 'J660','J661','J662', 
+'J668', 'J670', 'J680', 'J698', 'J82X' );
+
+
+#####Extracting A&E Cardiovascular illness 
+CREATE OR REPLACE TABLE `yhcr-prd-phm-bia-core.[xxxxxx].ae_respiratory` AS
+SELECT person_id, Date, diag, ethn3, sex, imd_quin_bfd, imd_quin_nat, age_group
+ FROM `yhcr-prd-phm-bia-core.[xxxxxxx].bri_ae` a,
+ #please add a quotation mark to each term
+WHERE diag in ('I252', 'I130', 'I214', 'I498', 'A360', 'A520D', 
+'A691', 'B085', 'B270', 'B271', 'B278', 'B279', 'D70X', 'E059', 'E059D', 
+'E116', 'F453', 'I018', 'I020', 'I098', 'I099', 'I10X', 'I110', 'I119', 
+'I130', 'I131', 'I132', 'I139', 'I200', 'I201', 'I208','I209','I210','I211','I212',
+'I213','I214', 'I219','I220','I221', 
+'I228', 'I229', 'I232', 'I251', 'I252', 'I255', 'I256', 'I258','I259','I260', 'I279', 
+'I420','I421','I422','I423','I424','I425','I426','I427','I428',
+'I429', 'I438A', 'I460', 'I461', 'I469','I470','I471','I472', 'I479', 'I480',
+'I481','I482','I483','I484', 'I489','I490','I491','I492','I493','I494','I495', 
+'I498','I499','I500','I501', 'I509', 'I515', 'I520A', 'I610','I611','I612',
+'I613','I614','I615','I616', 'I618', 'I621', 
+'I629','I630','I631','I632','I633','I634','I635','I636', 'I638', 'I639', 
+'I64X', 'I672', 'I739', 'I971', 'I978', 'O680', 
+'O682', 'O683', 'O688', 'O689', 'O903', 'O994', 
+'P200', 'P201', 'P209', 'P290','P291', 'P294', 
+'R000', 'R001', 'T410','T411','T412','T413','T414','T415', 'T818', 'T828', 'Z951');
+
+
+#####################THE END###############################################################
