@@ -56,6 +56,18 @@
     </li>
 </ul>
 <p style="-webkit-text-stroke-width:0px;background-color:rgb(255, 255, 255);color:rgb(17, 17, 17);font-family:-apple-system, Roboto, SegoeUI, &quot;Segoe UI&quot;, &quot;Helvetica Neue&quot;, Helvetica, &quot;Microsoft YaHei&quot;, &quot;Meiryo UI&quot;, Meiryo, &quot;Arial Unicode MS&quot;, sans-serif;font-size:16px;font-style:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-variation-settings:var(--cib-type-body2-font-variation-settings);font-weight:400;letter-spacing:normal;line-height:var(--cib-type-body2-line-height);margin:12px 0px 0px;orphans:2;padding:0px;text-align:start;text-decoration-color:initial;text-decoration-style:initial;text-decoration-thickness:initial;text-indent:0px;text-transform:none;white-space:normal;widows:2;word-break:break-word;word-spacing:0px;">This comprehensive study will provide valuable insights into the impact of the Bradford CAZ and inform future pollution reduction strategies.</p>
+
+ <ul style="-webkit-text-stroke-width:0px;background-color:rgb(255, 255, 255);color:rgb(17, 17, 17);display:flex;flex-direction:column;font-family:-apple-system, Roboto, SegoeUI, &quot;Segoe UI&quot;, &quot;Helvetica Neue&quot;, Helvetica, &quot;Microsoft YaHei&quot;, &quot;Meiryo UI&quot;, Meiryo, &quot;Arial Unicode MS&quot;, sans-serif;font-size:16px;font-style:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-weight:400;gap:12px;letter-spacing:normal;margin-bottom:0px;margin-right:0px;margin-top:12px;orphans:2;padding-inline-start:24px;text-align:start;text-decoration-color:initial;text-decoration-style:initial;text-decoration-thickness:initial;text-indent:0px;text-transform:none;white-space:normal;widows:2;word-spacing:0px;">
+    <li>
+        <p style="margin-left:0px;"><strong>Papers associated :</strong></p>
+        <ul>
+            <li>
+                <p style="margin-left:0px;"><a target="_blank" rel="noopener noreferrer" href="https://www.sciencedirect.com/science/article/pii/S0269749123011259">The effects of exposure to NO2, PM2.5 and PM10 on health service attendances with respiratory illnesses: A time-series analysis - ScienceDirect</a></p>
+                <p style="-webkit-text-stroke-width:0px;background-color:rgb(255, 255, 255);color:rgb(17, 17, 17);font-family:-apple-system, Roboto, SegoeUI, &quot;Segoe UI&quot;, &quot;Helvetica Neue&quot;, Helvetica, &quot;Microsoft YaHei&quot;, &quot;Meiryo UI&quot;, Meiryo, &quot;Arial Unicode MS&quot;, sans-serif;font-size:16px;font-style:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-variation-settings:var(--cib-type-body2-font-variation-settings);font-weight:400;letter-spacing:normal;line-height:var(--cib-type-body2-line-height);margin:12px 0px 0px;orphans:2;padding:0px;text-align:start;text-decoration-color:initial;text-decoration-style:initial;text-decoration-thickness:initial;text-indent:0px;text-transform:none;white-space:normal;widows:2;word-break:break-word;word-spacing:0px;">&nbsp;</p>
+            </li>
+        </ul>
+    </li>
+</ul>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
